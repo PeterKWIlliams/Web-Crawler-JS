@@ -29,3 +29,17 @@ const getURLsFromHTML = (htmlBody, baseUrl) => {
   }
   return hrefs;
 };
+
+const fetchHtml = async (url) => {
+  const response = await fetch(url);
+  if (response.status >= 400) {
+    throw new Error(`HTTP error: ${response.status}`);
+  }
+  const contentType = response.headers.get("content-type");
+  if (!contentType || !contentType.includes("text/html")) {
+    console.log(contentType, "this is the content type");
+    throw new Error(`Content is not HTML this is the url${url}`);
+  }
+  return response.text();
+};
+
