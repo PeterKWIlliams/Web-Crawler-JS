@@ -11,7 +11,6 @@ const normalizeURL = (url) => {
   return cleanPath ? `${urlObj.hostname}/${cleanPath}` : urlObj.hostname;
 };
 
-export { normalizeURL };
 const getURLsFromHTML = (htmlBody, baseUrl) => {
   const domCopy = new JSDOM(htmlBody);
   const anchorTags = domCopy.window.document.querySelectorAll("a");

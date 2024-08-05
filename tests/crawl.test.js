@@ -1,5 +1,5 @@
 import { test, expect } from "@jest/globals";
-import { normalizeURL } from "../src/crawl.js";
+import { getURLsFromHTML, normalizeURL } from "../src/crawl.js";
 
 describe("normalizeURL", () => {
   const testCases = [
@@ -49,5 +49,71 @@ describe("normalizeURL", () => {
     test(`normalizeURL ${name}`, () => {
       expect(normalizeURL(input)).toBe(expected);
     });
+  });
+});
+
+describe("getURLsFromHTML", () => {
+  test("getsURLsFromHTML single anchor tag", () => {
+    const htlmBody = `
+<html>
+    <body>
+        <a href="https://blog.boot.dev"><span>Go to Boot.dev</span></a>
+    </body>
+</html>
+  `;
+    const expected = ["https://blog.boot.dev/"];
+    expect(getURLsFromHTML(htlmBody)).toEqual(expected);
+  });
+
+  test("getsURLsFromHTML multiple anchor tags", () => {
+    const htlmBody = `
+<html>
+    <body>
+        <a href="https://www.google.dev"><span>Go to Boot.dev</span></a>
+        <a href="https://blog.boot.dev"><span>Go to Boot.dev</span></a>
+        <a href="https://blog.boot.dev"><span>Go to Boot.dev</span></a>
+    </body>
+</html>
+  `;
+    const expected = [
+      "https://www.google.dev/",
+      "https://blog.boot.dev/",
+      "https://blog.boot.dev/",
+    ];
+    expect(getURLsFromHTML(htlmBody)).toEqual(expected);
+  });
+
+  test("getsURLsFromHTML relative redirect", () => {
+    const baseUrl = "https://www.google.com";
+    const htlmBody = `
+  <html>
+      <body>
+          <a href="/locations/hello/when"><span>Go to Boot.dev</span></a>
+          <a href="/help/then/one"><span>Go to Boot.dev</span></a>
+      </body>
+  </html>
+    `;
+    const expected = [
+      "https://www.google.com/locations/hello/when",
+      "https://www.google.com/help/then/one",
+    ];
+    console.log(
+      getURLsFromHTML(htlmBody, baseUrl),
+      "this is waht im looking for",
+    );
+    expect(getURLsFromHTML(htlmBody, baseUrl)).toEqual(expected);
+  });
+
+  test("getsURLsFromHTML no href", () => {
+    const htlmBody = `
+  <html>
+      <body>
+          <a><span>Go to Boot.dev</span></a>
+      </body>
+  </html>
+    `;
+    const expected = [];
+    console.log(getURLsFromHTML(htlmBody), "thsi is waht i m lookign for");
+    expect(getURLsFromHTML(htlmBody, "")).toEqual(expected);
   });
 });
