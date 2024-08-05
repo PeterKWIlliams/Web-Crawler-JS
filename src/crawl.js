@@ -43,3 +43,34 @@ const fetchHtml = async (url) => {
   return response.text();
 };
 
+const crawlPage = async (baseURL, currentURL = baseURL, pages = {}) => {
+  const currentUrlObj = new URL(currentURL);
+  const baseURLObj = new URL(baseURL);
+  if (currentUrlObj.hostname !== baseURLObj.hostname) {
+    return pages;
+  }
+  const normalizedURL = normalizeURL(currentURL);
+  if (pages[normalizedURL] > 0) {
+    pages[normalizedURL] += 1;
+    return pages;
+  } else {
+    pages[normalizedURL] = 1;
+  }
+  let html = "";
+  try {
+    html = await fetchHtml(currentURL);
+  } catch (err) {
+    console.log(`${err.message} hit not something that is html`);
+  }
+  try {
+    const urls = getURLsFromHTML(html, baseURL);
+    urls.forEach(async (url) => {
+      pages = await crawlPage(baseURL, url, pages);
+    });
+  } catch (error) {
+    throw new Error(`error: ${error.message}`);
+  }
+
+  return pages;
+};
+export { normalizeURL, getURLsFromHTML, crawlPage };
