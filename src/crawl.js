@@ -1,3 +1,4 @@
+import { JSDOM } from "jsdom";
 const normalizeURL = (url) => {
   const urlObj = new URL(url);
   let cleanPath = urlObj.pathname;
@@ -11,3 +12,20 @@ const normalizeURL = (url) => {
 };
 
 export { normalizeURL };
+const getURLsFromHTML = (htmlBody, baseUrl) => {
+  const domCopy = new JSDOM(htmlBody);
+  const anchorTags = domCopy.window.document.querySelectorAll("a");
+  const hrefs = [];
+  for (const anchor of anchorTags) {
+    if (anchor.hasAttribute("href")) {
+      let href = anchor.href;
+      try {
+        href = new URL(href, baseUrl).href;
+        hrefs.push(href);
+      } catch (err) {
+        console.log(`${err.message}:${href}`);
+      }
+    }
+  }
+  return hrefs;
+};
